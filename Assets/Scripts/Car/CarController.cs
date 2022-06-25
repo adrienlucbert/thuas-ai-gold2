@@ -23,6 +23,11 @@ public class CarController : MonoBehaviour
     private Quaternion startrotation;
     private float fscore;
 
+    private void SpawnCar()
+    {
+
+    }
+
     public void InitializePopulation()
     {
         // start population with random combinations
