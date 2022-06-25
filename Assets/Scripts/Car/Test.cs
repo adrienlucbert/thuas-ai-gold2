@@ -1,4 +1,7 @@
+using System;
 using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Test : MonoBehaviour
@@ -18,7 +21,9 @@ public class Test : MonoBehaviour
                         new MetaGene { Name = "x", Bounds = (0f, 1f) },
                         new MetaGene { Name = "y", Bounds = (0f, 5f) }
                     },
-                    FitnessFn = this.Evaluate
+                    FitnessFn = this.Evaluate,
+                    Init = this.InitGenomeContext,
+                    Update = this.UpdateGenomeContext
                 },
                 Size = 3
             },
@@ -45,11 +50,34 @@ public class Test : MonoBehaviour
             BestIs = GeneticAlgorithm.BestIsEnum.Maximum,
             IsVerbose = true
         };
-        Population[] populations = ga.Run(this.Seed);
+        StartCoroutine(this.SyncRun(ga));
     }
 
-    private float Evaluate(float[] values)
+    private IEnumerator OnAfterUpdate()
     {
-        return values.Sum();
+        yield return new WaitForFixedUpdate();
+    }
+
+    private IEnumerator SyncRun(GeneticAlgorithm ga)
+    {
+	    yield return ga.Run(this.Seed, this.OnAfterUpdate);
+    }
+
+    private object InitGenomeContext(Genome genome)
+    {
+        return null;
+    }
+    
+    private void UpdateGenomeContext(Genome genome, object context)
+    {
+        genome.Evaluate();
+    }
+
+    private float Evaluate(Genome genome, object context)
+    {
+        float sum = 0f;
+        foreach (Gene gene in genome.Genes)
+            sum += gene.Value;
+	    return sum;
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -23,7 +24,7 @@ public class GeneticAlgorithm
     public BestIsEnum BestIs = BestIsEnum.Maximum;
     public bool IsVerbose = false;
 
-    public Population[] Run(int? seed = null)
+    public IEnumerator Run(int? seed, Func<IEnumerator> onAfterUpdate)
     {
         if (seed.HasValue)
             RNG.Seed(seed.Value);
@@ -39,12 +40,19 @@ public class GeneticAlgorithm
             populations.Add(population);
 
             // Evaluate genomes
-            foreach (Genome genome in population.Genomes)
-            {
-                if (genome.Fitness.HasValue)
-                    continue;
-                genome.Evaluate();
-            }
+	        bool evaluationDone = false;
+	        while (!evaluationDone)
+	        {
+		        evaluationDone = true;
+		        foreach (Genome genome in population.Genomes)
+		        {
+			        if (genome.Fitness.HasValue)
+				        continue;
+                    genome.Update();
+			        evaluationDone = false;
+		        }
+		        yield return onAfterUpdate();
+	        }
 
             // Sort genomes by fitness
             Array.Sort(population.Genomes, (Genome a, Genome b) =>
@@ -73,7 +81,6 @@ public class GeneticAlgorithm
                     n => this.PickParentsFromPopulation(population, n));
             }
         }
-        return populations.ToArray();
     }
 
     private List<Genome> PickParentsFromPopulation(Population population, int parentsCount)

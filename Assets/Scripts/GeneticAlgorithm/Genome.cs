@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Collections;
 using System.Diagnostics;
 
 public class Genome : ICloneable, IComparable<Genome>
@@ -7,6 +8,7 @@ public class Genome : ICloneable, IComparable<Genome>
     public MetaGenome MetaGenome;
     public Gene[] Genes;
     public float? Fitness = null;
+    public object Context;
 
     public Gene this[uint index]
     {
@@ -18,9 +20,19 @@ public class Genome : ICloneable, IComparable<Genome>
         }
     }
 
+    public void Init()
+    {
+        this.Context = this.MetaGenome.Init(this);
+    }
+
+    public void Update()
+    {
+        this.MetaGenome.Update(this, this.Context);
+    }
+
     public void Evaluate()
     {
-        this.Fitness = this.MetaGenome.FitnessFn(Array.ConvertAll(this.Genes, gene => gene.Value));
+        this.Fitness = this.MetaGenome.FitnessFn(this, this.Context);
     }
 
     public override string ToString()
@@ -30,17 +42,19 @@ public class Genome : ICloneable, IComparable<Genome>
 
     public object Clone()
     {
-        return new Genome
+        Genome newGenome = new Genome
         {
             MetaGenome = this.MetaGenome,
             Genes = Array.ConvertAll(this.Genes, gene => (Gene)gene.Clone()),
             Fitness = this.Fitness
         };
+        newGenome.Update();
+        return newGenome;
     }
 
     public int CompareTo(Genome rhs)
     {
-        Debug.Assert(this.Fitness.HasValue && rhs.Fitness.HasValue, "Genomes cannot be compared unless their fitness was evaluted");
+        Debug.Assert(this.Fitness.HasValue && rhs.Fitness.HasValue, "Genomes cannot be compared unless their fitness was evaluated");
         return rhs.Fitness.Value.CompareTo(this.Fitness.Value);
     }
 }
