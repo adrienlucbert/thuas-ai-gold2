@@ -16,9 +16,13 @@ public class TrainingManager : MonoBehaviour
     {
         CarController.Parameters parameter = new CarController.Parameters
         {
-            AnchorFrontWheel = new Vector2(Random.Range(0f, 2f), Random.Range(-1.2f, 0.5f)),
-            AnchorBackWheel = new Vector2(Random.Range(-1.4f, 0f), Random.Range(-1.2f, 0.5f))
-    };
+            FrontHasTraction = genome["FrontHasTraction"].Value > 0.5f,
+            BackHasTraction = genome["BackHasTraction"].Value > 0.5f,
+            AnchorFrontWheel = new Vector2(genome["AnchorFrontWheelX"].Value, genome["AnchorFrontWheelY"].Value),
+            AnchorBackWheel = new Vector2(genome["AnchorBackWheelX"].Value, genome["AnchorBackWheelY"].Value),
+            FrontWheelSize = genome["FrontWheelSize"].Value,
+            BackWheelSize = genome["BackWheelSize"].Value
+        };
         return this.SpawnCar(parameter);
     }
 
@@ -45,10 +49,14 @@ public class TrainingManager : MonoBehaviour
                 MetaGenome = new MetaGenome
                 {
                     MetaGenes = new MetaGene[] {
+                        new MetaGene { Name = "FrontHasTraction", Bounds = (0f, 1f) },
+                        new MetaGene { Name = "BackHasTraction", Bounds = (0f, 1f) },
                         new MetaGene { Name = "AnchorFrontWheelX", Bounds = (0f, 2f) },
                         new MetaGene { Name = "AnchorFrontWheelY", Bounds = (-1.2f, 0.5f) },
                         new MetaGene { Name = "AnchorBackWheelX", Bounds = (-1.4f, 0f) },
-                        new MetaGene { Name = "AnchorBackWheelY", Bounds = (-1.2f, 0.5f) }
+                        new MetaGene { Name = "AnchorBackWheelY", Bounds = (-1.2f, 0.5f) },
+                        new MetaGene { Name = "BackWheelSize", Bounds = (0.3f, 1.2f) },
+                        new MetaGene { Name = "FrontWheelSize", Bounds = (0.3f, 1.2f) }
                     },
                     FitnessFn = this.EvaluateFitness,
                     Init = this.GenomeToCar,
@@ -90,8 +98,10 @@ public class TrainingManager : MonoBehaviour
 
     private float EvaluateFitness(Genome genome)
     {
-        float fitness = ((CarController)genome.Context).RigidBody.position.x - this.StartPosition.position.x;
-        Destroy(((CarController)genome.Context).transform.parent.gameObject);
-        return fitness;
+        CarController carController = (CarController)genome.Context;
+        float distance = carController.RigidBody.position.x - this.StartPosition.position.x;
+        float time = Time.time - carController.StartTime;
+        Destroy(carController.transform.parent.gameObject);
+        return distance - time;
     }
 }

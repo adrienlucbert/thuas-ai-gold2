@@ -11,7 +11,7 @@ public class CarController : MonoBehaviour
     
     public Rigidbody2D RigidBody;
 
-    private float _startTime;
+    [HideInInspector] public float StartTime;
 
     public class Parameters
     {
@@ -21,15 +21,18 @@ public class CarController : MonoBehaviour
         public float TorqueBack = 10000f;
         public bool FrontHasTraction = true;
         public bool BackHasTraction = true;
-        public float RotationSpeed = 70f;
         public Vector2 AnchorFrontWheel;
         public Vector2 AnchorBackWheel;
+        public float FrontWheelSize;
+        public float BackWheelSize;
     }
 
     public void Init(Parameters parameters)
     {
         this.frontwheel.anchor = parameters.AnchorFrontWheel;
         this.backwheel.anchor = parameters.AnchorBackWheel;
+        this.frontwheel.connectedBody.gameObject.transform.localScale = new Vector3(parameters.FrontWheelSize, parameters.FrontWheelSize, parameters.FrontWheelSize);
+        this.backwheel.connectedBody.gameObject.transform.localScale = new Vector3(parameters.BackWheelSize, parameters.BackWheelSize, parameters.BackWheelSize);
 
         if (parameters.FrontHasTraction)
         {
@@ -40,17 +43,17 @@ public class CarController : MonoBehaviour
 
         if (parameters.BackHasTraction)
         {
-            this.motorBack.motorSpeed = parameters.SpeedFront * -1;
-            this.motorBack.maxMotorTorque = parameters.TorqueFront;
+            this.motorBack.motorSpeed = parameters.SpeedBack * -1;
+            this.motorBack.maxMotorTorque = parameters.TorqueBack;
             this.backwheel.motor = this.motorBack;
         }
 
-        this._startTime = Time.time;
+        this.StartTime = Time.time;
     }
 
     public void UpdateGenome(Genome genome)
     {
-        if (Time.time - this._startTime > 1.0f && this.RigidBody.velocity.magnitude < 0.3f) 
+        if (Time.time - this.StartTime > 1.0f && this.RigidBody.velocity.magnitude < 0.3f) 
             genome.Evaluate();
     }
 }
