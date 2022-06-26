@@ -68,7 +68,6 @@ public class GeneticAlgorithm
                     return b.CompareTo(a);
             });
             this.Log($"{population.GenerationId}, best genome: {population.Genomes[0]}");
-            this.Log($"{population}");
 
             if (i == this.GenerationsCount - 1)
                 // This is the last population to evaluate, we can skip

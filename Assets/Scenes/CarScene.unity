@@ -549,7 +549,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 965869863}
   m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: -34.6, y: 4.5, z: 0}
+  m_LocalPosition: {x: -33.3, y: 4.5, z: 0}
   m_LocalScale: {x: 1.5843112, y: 1.6430221, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -761,7 +761,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1377002871}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -9.7, y: -7.4, z: 0}
+  m_LocalPosition: {x: -10.9, y: -8.1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -777,7 +777,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1466649413}
   - component: {fileID: 1466649414}
-  - component: {fileID: 1466649415}
   m_Layer: 0
   m_Name: TrainingManager
   m_TagString: Untagged
@@ -811,25 +810,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a90d7d73d9d6604bb13a4d8fc8c0f79, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Seed: 10
+  Seed: 42
   CarPrefab: {fileID: 4546879939021963505, guid: 2f40f9710c134024ea5098e9f0fb65a4, type: 3}
   StartPosition: {fileID: 1377002872}
   GenerationsCount: 5
-  GenerationsSize: 10
-  MaxSimulateousCars: 1
---- !u!114 &1466649415
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1466649412}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8506bcac069527c4d8940d2a6b828276, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Seed: 0
+  GenerationsSize: 100
+  MaxSimulateousCars: 5
 --- !u!1 &1724722271
 GameObject:
   m_ObjectHideFlags: 0

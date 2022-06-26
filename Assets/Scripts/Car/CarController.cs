@@ -26,11 +26,6 @@ public class CarController : MonoBehaviour
         public Vector2 AnchorBackWheel;
     }
 
-    private void Awake()
-    {
-        this.RigidBody = this.GetComponent<Rigidbody2D>();
-    }
-
     public void Init(Parameters parameters)
     {
         this.frontwheel.anchor = parameters.AnchorFrontWheel;
