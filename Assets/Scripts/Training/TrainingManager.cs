@@ -21,7 +21,8 @@ public class TrainingManager : MonoBehaviour
             AnchorFrontWheel = new Vector2(genome["AnchorFrontWheelX"].Value, genome["AnchorFrontWheelY"].Value),
             AnchorBackWheel = new Vector2(genome["AnchorBackWheelX"].Value, genome["AnchorBackWheelY"].Value),
             FrontWheelSize = genome["FrontWheelSize"].Value,
-            BackWheelSize = genome["BackWheelSize"].Value
+            BackWheelSize = genome["BackWheelSize"].Value,
+            CarBodySize = genome["CarBodySize"].Value
         };
         return this.SpawnCar(parameter);
     }
@@ -56,7 +57,8 @@ public class TrainingManager : MonoBehaviour
                         new MetaGene { Name = "AnchorBackWheelX", Bounds = (-1.4f, 0f) },
                         new MetaGene { Name = "AnchorBackWheelY", Bounds = (-1.2f, 0.5f) },
                         new MetaGene { Name = "BackWheelSize", Bounds = (0.3f, 1.2f) },
-                        new MetaGene { Name = "FrontWheelSize", Bounds = (0.3f, 1.2f) }
+                        new MetaGene { Name = "FrontWheelSize", Bounds = (0.3f, 1.2f) },
+                        new MetaGene { Name = "CarBodySize", Bounds = (0.5f, 1.5f) }
                     },
                     FitnessFn = this.EvaluateFitness,
                     Init = this.GenomeToCar,

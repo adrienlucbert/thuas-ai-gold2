@@ -25,6 +25,7 @@ public class CarController : MonoBehaviour
         public Vector2 AnchorBackWheel;
         public float FrontWheelSize;
         public float BackWheelSize;
+        public float CarBodySize;
     }
 
     public void Init(Parameters parameters)
@@ -33,6 +34,7 @@ public class CarController : MonoBehaviour
         this.backwheel.anchor = parameters.AnchorBackWheel;
         this.frontwheel.connectedBody.gameObject.transform.localScale = new Vector3(parameters.FrontWheelSize, parameters.FrontWheelSize, parameters.FrontWheelSize);
         this.backwheel.connectedBody.gameObject.transform.localScale = new Vector3(parameters.BackWheelSize, parameters.BackWheelSize, parameters.BackWheelSize);
+        this.transform.localScale = new Vector3(parameters.CarBodySize, parameters.CarBodySize, parameters.CarBodySize);
 
         if (parameters.FrontHasTraction)
         {
