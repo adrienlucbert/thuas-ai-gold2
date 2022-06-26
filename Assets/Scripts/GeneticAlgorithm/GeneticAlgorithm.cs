@@ -24,8 +24,11 @@ public class GeneticAlgorithm
     public BestIsEnum BestIs = BestIsEnum.Maximum;
     public uint MaxSimulateousCars = 1;
     public bool IsVerbose = false;
+    public Action<Population, bool> OnStartGeneration = null;
+    public Action<Population, bool> OnEndGeneration = null;
+    public Action<Genome> OnEvaluateGenome = null;
 
-    public IEnumerator Run(int? seed, Func<IEnumerator> onAfterUpdate)
+    public IEnumerator Run(int? seed = null)
     {
         if (seed.HasValue)
             RNG.Seed(seed.Value);
@@ -39,6 +42,8 @@ public class GeneticAlgorithm
             Population population = (Population)populations.Last().Clone();
             population.GenerationId += 1;
             populations.Add(population);
+            bool isLastGeneration = i == this.GenerationsCount - 1;
+            this.OnStartGeneration?.Invoke(population, isLastGeneration);
 
             // Evaluate genomes
 	        bool evaluationDone = false;
@@ -54,9 +59,11 @@ public class GeneticAlgorithm
                         genome.Init();
                     ++activeCars;
                     genome.Update();
+                    if (genome.Fitness.HasValue)
+                        this.OnEvaluateGenome?.Invoke(genome);
 			        evaluationDone = false;
 		        }
-		        yield return onAfterUpdate();
+		        yield return new WaitForFixedUpdate();
 	        }
 
             // Sort genomes by fitness
@@ -68,8 +75,9 @@ public class GeneticAlgorithm
                     return b.CompareTo(a);
             });
             this.Log($"{population.GenerationId}, best genome: {population.Genomes[0]}");
+            this.OnEndGeneration?.Invoke(population, isLastGeneration);
 
-            if (i == this.GenerationsCount - 1)
+            if (isLastGeneration)
                 // This is the last population to evaluate, we can skip
                 // the culling and populating parts
                 continue;

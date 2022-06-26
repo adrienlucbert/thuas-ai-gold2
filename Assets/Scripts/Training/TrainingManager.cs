@@ -1,16 +1,31 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class TrainingManager : MonoBehaviour
 {
-    public int Seed;
     public GameObject CarPrefab;
     public Transform StartPosition;
     public uint GenerationsCount = 3;
     public uint GenerationsSize = 10;
     public uint MaxSimulateousCars = 10;
     private List<CarController> _cars = new List<CarController>();
+    private CarController _bestGenomeInstance = null;
+    private Genome _bestGenome;
+    public Genome BestGenome
+    {
+        get => this._bestGenome;
+        set
+        {
+            this._bestGenome = value;
+            this.OnNewBestGenome?.Invoke(value);
+        }
+    }
+
+    public UnityEvent<Genome> OnNewBestGenome;
+    public UnityEvent<Population, bool> OnEndGeneration;
+    public UnityEvent<Population, bool> OnStartGeneration;
 
     private object GenomeToCar(Genome genome)
     {
@@ -43,6 +58,13 @@ public class TrainingManager : MonoBehaviour
 
     private void Start()
     {
+        this.Run();
+    }
+
+    public void Run()
+    {
+        if (this._bestGenomeInstance != null)
+            Destroy(this._bestGenomeInstance.transform.parent.gameObject);
         GeneticAlgorithm ga = new GeneticAlgorithm
         {
             MetaPopulation = new MetaPopulation
@@ -88,14 +110,37 @@ public class TrainingManager : MonoBehaviour
             },
             BestIs = GeneticAlgorithm.BestIsEnum.Maximum,
             MaxSimulateousCars = this.MaxSimulateousCars,
-            IsVerbose = true
+            IsVerbose = true,
+            OnStartGeneration = this.OnStartGenerationHandler,
+            OnEndGeneration = this.OnEndGenerationHandler,
+            OnEvaluateGenome = this.OnEvaluateGenome
         };
-        StartCoroutine(ga.Run(this.Seed, this.OnAfterUpdate));
+        StartCoroutine(ga.Run());
     }
 
-    private IEnumerator OnAfterUpdate()
+    public void PlayBestGenome()
     {
-        yield return new WaitForFixedUpdate();
+        if (this._bestGenomeInstance != null)
+            Destroy(this._bestGenomeInstance.transform.parent.gameObject);
+        this._bestGenomeInstance = (CarController)this.GenomeToCar(this.BestGenome);
+    }
+
+    private void OnEvaluateGenome(Genome genome)
+    {
+        if (this.BestGenome == null || genome.Fitness.Value > this.BestGenome.Fitness.Value)
+        {
+            this.BestGenome = genome;
+        }
+    }
+
+    private void OnStartGenerationHandler(Population generation, bool isLast)
+    {
+        this.OnStartGeneration?.Invoke(generation, isLast);
+    }
+
+    private void OnEndGenerationHandler(Population generation, bool isLast)
+    {
+        this.OnEndGeneration?.Invoke(generation, isLast);
     }
 
     private float EvaluateFitness(Genome genome)
