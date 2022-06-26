@@ -68,12 +68,12 @@ public class Test : MonoBehaviour
         return null;
     }
     
-    private void UpdateGenomeContext(Genome genome, object context)
+    private void UpdateGenomeContext(Genome genome)
     {
         genome.Evaluate();
     }
 
-    private float Evaluate(Genome genome, object context)
+    private float Evaluate(Genome genome)
     {
         float sum = 0f;
         foreach (Gene gene in genome.Genes)

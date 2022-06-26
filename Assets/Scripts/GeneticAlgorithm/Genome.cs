@@ -9,6 +9,7 @@ public class Genome : ICloneable, IComparable<Genome>
     public Gene[] Genes;
     public float? Fitness = null;
     public object Context;
+    public bool IsInit = false;
 
     public Gene this[uint index]
     {
@@ -20,19 +21,25 @@ public class Genome : ICloneable, IComparable<Genome>
         }
     }
 
+    public Gene this[string name]
+    {
+        get => Array.Find(this.Genes, gene => gene.MetaGene.Name == name);
+    }
+
     public void Init()
     {
         this.Context = this.MetaGenome.Init(this);
+        this.IsInit = true;
     }
 
     public void Update()
     {
-        this.MetaGenome.Update(this, this.Context);
+        this.MetaGenome.Update(this);
     }
 
     public void Evaluate()
     {
-        this.Fitness = this.MetaGenome.FitnessFn(this, this.Context);
+        this.Fitness = this.MetaGenome.FitnessFn(this);
     }
 
     public override string ToString()
@@ -48,7 +55,6 @@ public class Genome : ICloneable, IComparable<Genome>
             Genes = Array.ConvertAll(this.Genes, gene => (Gene)gene.Clone()),
             Fitness = this.Fitness
         };
-        newGenome.Update();
         return newGenome;
     }
 

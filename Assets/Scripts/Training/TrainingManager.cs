@@ -1,63 +1,62 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class TrainingManager : MonoBehaviour
 {
-    private class Car
-    {
-        public GameObject GameObject;
-        public CarController CarController;
-        public Rigidbody2D RigidBody;
-	    public bool IsDead = false;
-	    private float _timer = 0.0f;
-
-	    public static Car Spawn(GameObject prefab, Vector3 position, Quaternion rotation)
-	    {
-		    GameObject carGameObject = Instantiate(prefab, position, rotation);
-		    return new Car
-		    {
-		        GameObject = carGameObject,
-		        RigidBody = carGameObject.GetComponent<Rigidbody2D>(),
-                CarController = carGameObject.GetComponent<CarController>()
-		    };
-	    }
-
-	    public void Init()
-	    {
-	    }
-
-	    public void FixedUpdate()
-	    {
-		    this._timer += Time.fixedDeltaTime;
-		    if (this._timer > 1.0f && this.RigidBody.velocity.magnitude < 0.3f)
-			    this.IsDead = true;
-	    }
-    }
-
+    public int Seed;
     public GameObject CarPrefab;
     public Transform StartPosition;
-    public int MaxSimulateousCars = 10;
-    private List<Car> _cars = new List<Car>();
+    public uint GenerationsCount = 3;
+    public uint GenerationsSize = 10;
+    public uint MaxSimulateousCars = 10;
+    private List<CarController> _cars = new List<CarController>();
+
+    private object GenomeToCar(Genome genome)
+    {
+        CarController.Parameters parameter = new CarController.Parameters
+        {
+            AnchorFrontWheel = new Vector2(Random.Range(0f, 2f), Random.Range(-1.2f, 0.5f)),
+            AnchorBackWheel = new Vector2(Random.Range(-1.4f, 0f), Random.Range(-1.2f, 0.5f))
+    };
+        return this.SpawnCar(parameter);
+    }
+
+    private CarController SpawnCar(CarController.Parameters parameters)
+    {
+        GameObject carGameObject = Instantiate(this.CarPrefab, this.StartPosition.position, this.StartPosition.rotation);
+        CarController carController = carGameObject.GetComponentInChildren<CarController>();
+        carController.Init(parameters);
+        this._cars.Add(carController);
+        return carController;
+    }
+
+    private void UpdateCar(Genome genome)
+    {
+        ((CarController)genome.Context).UpdateGenome(genome);
+    }
 
     private void Start()
     {
-        /*GeneticAlgorithm ga = new GeneticAlgorithm
+        GeneticAlgorithm ga = new GeneticAlgorithm
         {
             MetaPopulation = new MetaPopulation
             {
                 MetaGenome = new MetaGenome
                 {
                     MetaGenes = new MetaGene[] {
-                        new MetaGene { Name = "x", Bounds = (0f, 1f) },
-                        new MetaGene { Name = "y", Bounds = (0f, 5f) }
+                        new MetaGene { Name = "AnchorFrontWheelX", Bounds = (0f, 2f) },
+                        new MetaGene { Name = "AnchorFrontWheelY", Bounds = (-1.2f, 0.5f) },
+                        new MetaGene { Name = "AnchorBackWheelX", Bounds = (-1.4f, 0f) },
+                        new MetaGene { Name = "AnchorBackWheelY", Bounds = (-1.2f, 0.5f) }
                     },
-                    FitnessFn = this.Evaluate,
-                    Init = this.InitGenomeContext,
-                    Update = this.UpdateGenomeContext
+                    FitnessFn = this.EvaluateFitness,
+                    Init = this.GenomeToCar,
+                    Update = this.UpdateCar
                 },
-                Size = 3
+                Size = this.GenerationsSize
             },
-            GenerationsCount = 20,
+            GenerationsCount = this.GenerationsCount,
             CullingRatio = 0.42f,
             GeneticOperations = new GeneticAlgorithm.GeneticOperationInfo[]
             {
@@ -78,25 +77,21 @@ public class TrainingManager : MonoBehaviour
                 }
             },
             BestIs = GeneticAlgorithm.BestIsEnum.Maximum,
+            MaxSimulateousCars = this.MaxSimulateousCars,
             IsVerbose = true
         };
-        StartCoroutine(this.SyncRun(ga));*/
+        StartCoroutine(ga.Run(this.Seed, this.OnAfterUpdate));
     }
 
-    private void FixedUpdate()
+    private IEnumerator OnAfterUpdate()
     {
-        // Kill stuck cars and spawn new ones in the limits of this.MaxSimulateousCars
-	    foreach (Car car in this._cars)
-	    {
-		    car.FixedUpdate();
-		    if (car.IsDead)
-		    {
-		    }
-	    }
+        yield return new WaitForFixedUpdate();
     }
 
-    private float EvaluateFitness(GameObject car)
+    private float EvaluateFitness(Genome genome)
     {
-        return car.GetComponent<Rigidbody2D>().position.x - GameObject.Find("Start").transform.position.x;
+        float fitness = ((CarController)genome.Context).RigidBody.position.x - this.StartPosition.position.x;
+        Destroy(((CarController)genome.Context).transform.parent.gameObject);
+        return fitness;
     }
 }

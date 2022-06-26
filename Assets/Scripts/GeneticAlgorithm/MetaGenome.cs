@@ -6,14 +6,13 @@ using System.Collections.Generic;
 public class MetaGenome
 {
     public MetaGene[] MetaGenes;
-    public Func<Genome, object, float> FitnessFn;
+    public Func<Genome, float> FitnessFn;
     public Func<Genome, object> Init;
-    public Action<Genome, object> Update;
+    public Action<Genome> Update;
 
     private Genome MakeGenomeFromGenes(Gene[] genes)
     {
         Genome newGenome = new Genome { MetaGenome = this, Genes = genes };
-        newGenome.Init();
         return newGenome;
     }
 

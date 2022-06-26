@@ -8,96 +8,54 @@ public class CarController : MonoBehaviour
 
     JointMotor2D motorFront;
     JointMotor2D motorBack;
-    Rigidbody2D rb;
+    
+    public Rigidbody2D RigidBody;
 
-    public float speedF;
-    public float speedB;
-    public float torqueF;
-    public float torqueB;
-    public bool TractionFront = true;
-    public bool TractionBack = true;
-    public float carRotationSpeed;
-    private float timer = 0.0f;
-    private float startpositionx;
-    private float startpositiony;
-    private Quaternion startrotation;
-    private float fscore;
+    private float _startTime;
 
-    public void InitializePopulation()
+    public class Parameters
     {
-        // start population with random combinations
-        frontwheel.anchor = new Vector2(Random.Range(0f, 2f), Random.Range(-1.2f, 0.5f));
-        backwheel.anchor = new Vector2(Random.Range(-1.4f, 0f), Random.Range(-1.2f, 0.5f));
+        public float SpeedFront = 1000f;
+        public float SpeedBack = -800f;
+        public float TorqueFront = 10000f;
+        public float TorqueBack = 10000f;
+        public bool FrontHasTraction = true;
+        public bool BackHasTraction = true;
+        public float RotationSpeed = 70f;
+        public Vector2 AnchorFrontWheel;
+        public Vector2 AnchorBackWheel;
     }
 
-    public void FitScore()
+    private void Awake()
     {
-        // determine the fit score
-        fscore = rb.transform.position.x - GameObject.Find("Start").transform.position.x;
+        this.RigidBody = this.GetComponent<Rigidbody2D>();
     }
 
-    public void SelectFitess()
+    public void Init(Parameters parameters)
     {
-        // based on the fit score make selection
-    }
+        this.frontwheel.anchor = parameters.AnchorFrontWheel;
+        this.backwheel.anchor = parameters.AnchorBackWheel;
 
-    public void ChangeChromosome()
-    {
-        // change the genes of the chromosomes by
-        // crossing over and/or mutation
-    }
-
-    public void ApplyHeuristic()
-    {
-        // speed up the process by for example filtering out products from which the internal chromosome are too similar
-        // can be skipped for a first proof of concept
-    }
-
-    // Use this for initialization
-    void Start()
-    {
-        rb = GetComponent<Rigidbody2D>();
-        InitializePopulation();
-        startpositionx = transform.position.x;
-        startpositiony = transform.position.y;
-        startrotation = transform.rotation;
-    }
-
-    // Update is called once per frame
-    void FixedUpdate()
-    {
-        timer += Time.deltaTime;
-
-        if (TractionFront)
+        if (parameters.FrontHasTraction)
         {
-            motorFront.motorSpeed = speedF * -1;
-            motorFront.maxMotorTorque = torqueF;
-            frontwheel.motor = motorFront;
+            this.motorFront.motorSpeed = parameters.SpeedFront * -1;
+            this.motorFront.maxMotorTorque = parameters.TorqueFront;
+            this.frontwheel.motor = this.motorFront;
         }
 
-        if (TractionBack)
+        if (parameters.BackHasTraction)
         {
-            motorBack.motorSpeed = speedF * -1;
-            motorBack.maxMotorTorque = torqueF;
-            backwheel.motor = motorBack;
+            this.motorBack.motorSpeed = parameters.SpeedFront * -1;
+            this.motorBack.maxMotorTorque = parameters.TorqueFront;
+            this.backwheel.motor = this.motorBack;
         }
 
-        if (rb.velocity.magnitude < 0.3f && timer > 1.0f)
-        {
-            // save fitness score
-            FitScore();
-            GameObject.Find("Fitscore").GetComponent<Text>().text = fscore.ToString();
-            rb.velocity = Vector2.zero;
-            rb.angularVelocity = 0f;
-            rb.rotation = 0f;
-            transform.position = new Vector3(startpositionx, startpositiony, 0f);
-            transform.rotation = startrotation;
-            frontwheel.connectedBody.velocity = Vector2.zero;
-            frontwheel.connectedBody.angularVelocity = 0f;
-            backwheel.connectedBody.velocity = Vector2.zero;
-            backwheel.connectedBody.angularVelocity = 0f;
-            InitializePopulation(); // should not be init, but should spawn next in car collection of this generation
-            timer = 0f;
-        }
+        this._startTime = Time.time;
+    }
+
+    public void UpdateGenome(Genome genome)
+    {
+        if (Time.time - this._startTime > 1.0f && this.RigidBody.velocity.magnitude < 0.3f) 
+            genome.Evaluate();
     }
 }

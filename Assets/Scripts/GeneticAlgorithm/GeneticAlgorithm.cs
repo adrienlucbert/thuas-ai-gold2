@@ -22,6 +22,7 @@ public class GeneticAlgorithm
     public float CullingRatio;
     public GeneticOperationInfo[] GeneticOperations;
     public BestIsEnum BestIs = BestIsEnum.Maximum;
+    public uint MaxSimulateousCars = 1;
     public bool IsVerbose = false;
 
     public IEnumerator Run(int? seed, Func<IEnumerator> onAfterUpdate)
@@ -44,10 +45,14 @@ public class GeneticAlgorithm
 	        while (!evaluationDone)
 	        {
 		        evaluationDone = true;
+                uint activeCars = 0;
 		        foreach (Genome genome in population.Genomes)
 		        {
-			        if (genome.Fitness.HasValue)
+                    if (genome.Fitness.HasValue || activeCars >= this.MaxSimulateousCars)
 				        continue;
+                    if (!genome.IsInit)
+                        genome.Init();
+                    ++activeCars;
                     genome.Update();
 			        evaluationDone = false;
 		        }
@@ -63,6 +68,7 @@ public class GeneticAlgorithm
                     return b.CompareTo(a);
             });
             this.Log($"{population.GenerationId}, best genome: {population.Genomes[0]}");
+            this.Log($"{population}");
 
             if (i == this.GenerationsCount - 1)
                 // This is the last population to evaluate, we can skip
