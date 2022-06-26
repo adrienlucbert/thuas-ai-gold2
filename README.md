@@ -13,10 +13,6 @@ Make a genetic algorithm optimize a car's ability to progress through a terrain.
 - Make use of the fitness function and other predefined functions (in source script)
 - Introduce at least 2 more variables
 
-### Result
-
-*Work in progress*
-
 ## Credits
 
 This project is the work of [Adrien Lucbert](https://github.com/adrienlucbert),
